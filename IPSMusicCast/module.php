@@ -1,6 +1,6 @@
 <?
 
-	class FunctionTest extends IPSModule
+	class IPSMusicCast extends IPSModule
 	{
 
 		public function CallBoolean(bool $Value)

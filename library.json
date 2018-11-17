@@ -1,8 +1,8 @@
 {
-	"id": "{ADB2ACA9-FF2A-4B6A-AE35-5F2DE74F5397}",
-	"author": "Symcon GmbH",
-	"name": "Test Modules",
-	"url": "www.ip-symcon.de",
+	"id": "{9E694B93-AF0C-461F-A477-903DD985C100}",
+	"author": "Joachim Mistlbacher",
+	"name": "Yamaha MusicCast Modul",
+	"url": "https://github.com/mistljo/IPSMusicCast",
 	"version": "1.0",
 	"build": 0,
 	"date": 0

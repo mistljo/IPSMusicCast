@@ -1,0 +1,9 @@
+{
+	"actions":
+	[
+		{ "type": "Button", "label": "Test Boolean", "onClick": "echo MUC_CallBoolean($id, true);" },
+		{ "type": "Button", "label": "Test Integer", "onClick": "MUC_CallInteger($id, 42);" },
+		{ "type": "Button", "label": "Test Float", "onClick": "MUC_CallFloat($id, 3.14);" },
+		{ "type": "Button", "label": "Test String", "onClick": "MUC_CallString($id, \"Test\");" }
+	]
+}

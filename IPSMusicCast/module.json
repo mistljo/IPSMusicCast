@@ -1,14 +1,14 @@
 {
-	"id": "{AD984601-635C-40EC-8E06-939B4B8748A3}",
-	"name": "FunctionTest",
+	"id": "{E253118A-A403-4E34-AF37-6A9227290A68}",
+	"name": "IPSMusicCast",
 	"type": 3,
 	"vendor": "",
 	"aliases": 
 	[
-		"FunctionTest"
+		"IPSMusicCast"
 	],
 	"parentRequirements": [],
 	"childRequirements": [],
 	"implemented": [],
-	"prefix": "FT"
+	"prefix": "MUC"
 }
