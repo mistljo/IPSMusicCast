@@ -76,7 +76,7 @@ class IPSMusicCast extends IPSModule
 		{
 			//Delete Cache Folder
 			$tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "musiccast";
-			$this->rrmdir($tempPath);
+			$this->delete_files($tempPath);
 			
 			//Get all Speakers in current Network
 			$musicCastNetwork = new MusicCast\Network;
@@ -99,7 +99,6 @@ class IPSMusicCast extends IPSModule
 			{
 				array_push($ExistingDevicesIDs, IPS_GetProperty($MusicCastInstance, "DeviceID"));
 			}
-/*
 			//Speaker Instancen erstellen
 			if (isset($MUCspeakers) && is_array($MUCspeakers)) {
 				foreach ($SpeakerIPs as $SpeakerIP)
@@ -127,7 +126,6 @@ class IPSMusicCast extends IPSModule
 					}
 				echo "Done, see Message Log for more Infos";
 			}
-			*/
 		}
 	
     /**
@@ -140,21 +138,18 @@ class IPSMusicCast extends IPSModule
         return $instance['ConnectionID'];
     }
 
-	protected function rrmdir($src) {
-		$dir = opendir($src);
-		while(false !== ( $file = readdir($dir)) ) {
-			if (( $file != '.' ) && ( $file != '..' )) {
-				$full = $src . '/' . $file;
-				if ( is_dir($full) ) {
-					$this->rrmdir($full);
-				}
-				else {
-					unlink($full);
-				}
+	function delete_files($target) {
+		if(is_dir($target)){
+			$files = glob( $target . '*', GLOB_MARK ); //GLOB_MARK adds a slash to directories returned
+
+			foreach( $files as $file ){
+				delete_files( $file );      
 			}
+
+			rmdir( $target );
+		} elseif(is_file($target)) {
+			unlink( $target );  
 		}
-		closedir($dir);
-		rmdir($src);
 	}
 }
 ?>

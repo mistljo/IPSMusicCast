@@ -94,7 +94,7 @@ public function updateSpeakerIP()
 {
 		//Update device IP
 		$tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "musiccast";
-		$this->rrmdir($tempPath);
+		$this->delete_files($tempPath);
 		$CurrentIP = $this->getSpeakerIPbyName($this->ReadPropertyString('Name'));
 		if($CurrentIP != $this->ReadPropertyString('Host'))
 			{
@@ -390,20 +390,17 @@ protected function createInputVariablenprofile()
         }
     }
 
-	protected function rrmdir($src) {
-		$dir = opendir($src);
-		while(false !== ( $file = readdir($dir)) ) {
-			if (( $file != '.' ) && ( $file != '..' )) {
-				$full = $src . '/' . $file;
-				if ( is_dir($full) ) {
-					$this->rrmdir($full);
-				}
-				else {
-					unlink($full);
-				}
-			}
-		}
-		closedir($dir);
-		rmdir($src);
-	}
+function delete_files($target) {
+    if(is_dir($target)){
+        $files = glob( $target . '*', GLOB_MARK ); //GLOB_MARK adds a slash to directories returned
+
+        foreach( $files as $file ){
+            delete_files( $file );      
+        }
+
+        rmdir( $target );
+    } elseif(is_file($target)) {
+        unlink( $target );  
+    }
+}
 }
