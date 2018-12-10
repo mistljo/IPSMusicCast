@@ -7,3 +7,7 @@ Tested on Symcon:
 Windows: Symcon 5.1 -> ok
 
 Linux: Symcon 5.1 -> OK
+
+Known Issues:
+
+Linked Spekaers not working.
