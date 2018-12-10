@@ -10,4 +10,4 @@ Linux: Symcon 5.1 -> OK
 
 Known Issues:
 
-Linked Spekaers not working.
+Linked Speakers not working.
