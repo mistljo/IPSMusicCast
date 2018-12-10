@@ -395,7 +395,7 @@ protected function delete_files($target) {
         $files = glob( $target . '*', GLOB_MARK ); //GLOB_MARK adds a slash to directories returned
 
         foreach( $files as $file ){
-            delete_files( $file );      
+            $this->delete_files( $file );      
         }
 
         rmdir( $target );
