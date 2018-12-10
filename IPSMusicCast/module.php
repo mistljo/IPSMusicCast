@@ -99,7 +99,7 @@ class IPSMusicCast extends IPSModule
 			{
 				array_push($ExistingDevicesIDs, IPS_GetProperty($MusicCastInstance, "DeviceID"));
 			}
-
+/*
 			//Speaker Instancen erstellen
 			if (isset($MUCspeakers) && is_array($MUCspeakers)) {
 				foreach ($SpeakerIPs as $SpeakerIP)
@@ -119,7 +119,7 @@ class IPSMusicCast extends IPSModule
 							IPS_SetProperty($NewMUCDevice, "Host", $SpeakerIP);
 							IPS_SetProperty($NewMUCDevice, "Name", $SpeakerName);
 							IPS_ApplyChanges($NewMUCDevice);
-							//MUC_DeviceSetup($NewMUCDevice);
+
 							
 						} else {
 							IPS_LogMessage("MusicCast", "Speaker/Controller " . $SpeakerName . " already exist. -> skip");
@@ -127,7 +127,7 @@ class IPSMusicCast extends IPSModule
 					}
 				echo "Done, see Message Log for more Infos";
 			}
-			
+			*/
 		}
 	
     /**
