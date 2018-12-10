@@ -1,9 +1,15 @@
 {
+    "elements":
+    [
+		{ "type": "Label", "caption": "Press (Get Devices) to scan for Speakers in current network" }
+    ],
 	"actions":
 	[
-		{ "type": "Button", "label": "Test Boolean", "onClick": "echo MUC_CallBoolean($id, true);" },
-		{ "type": "Button", "label": "Test Integer", "onClick": "MUC_CallInteger($id, 42);" },
-		{ "type": "Button", "label": "Test Float", "onClick": "MUC_CallFloat($id, 3.14);" },
-		{ "type": "Button", "label": "Test String", "onClick": "MUC_CallString($id, \"Test\");" }
-	]
+		{ "type": "Button", "label": "Get Devices", "onClick": "MUC_GetMCDevices($id);" },
+	],
+		"status":
+    [
+		{ "code": 102, "icon": "active", "caption": "Speaker(s) exists" },
+        { "code": 104, "icon": "inactive", "caption": "No Speaker found" },
+    ]
 }
