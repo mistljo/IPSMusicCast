@@ -94,7 +94,7 @@ public function updateSpeakerIP()
 {
 		//Update device IP
 		$tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "musiccast";
-		$this->delete_files($tempPath);
+		@$this->delete_files($tempPath);
 		$CurrentIP = $this->getSpeakerIPbyName($this->ReadPropertyString('Name'));
 		if($CurrentIP != $this->ReadPropertyString('Host'))
 			{

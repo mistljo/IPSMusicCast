@@ -76,7 +76,7 @@ class IPSMusicCast extends IPSModule
 		{
 			//Delete Cache Folder
 			$tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "musiccast";
-			$this->delete_files($tempPath);
+			@$this->delete_files($tempPath);
 			
 			//Get all Speakers in current Network
 			$musicCastNetwork = new MusicCast\Network;
