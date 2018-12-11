@@ -21,10 +21,15 @@ class IPSMusicCastDevice extends IPSModule
 		IPS_SetPosition($this->GetIDForIdent("State"), 1);
 		$this->EnableAction("State");
 		
-		$this->RegisterVariableInteger("PreviousNext", "PreviousNext");
-		IPS_SetVariableCustomProfile($this->GetIDForIdent("PreviousNext"), "MUC_PreviousNext");
-		IPS_SetPosition($this->GetIDForIdent("PreviousNext"), 2);
-		$this->EnableAction("PreviousNext");
+		$this->RegisterVariableInteger("Previous", "Previous");
+		IPS_SetVariableCustomProfile($this->GetIDForIdent("Previous"), "MUC_Previous");
+		IPS_SetPosition($this->GetIDForIdent("Previous"), 2);
+		$this->EnableAction("Previous");
+		
+		$this->RegisterVariableInteger("Next", "Next");
+		IPS_SetVariableCustomProfile($this->GetIDForIdent("Next"), "MUC_Next");
+		IPS_SetPosition($this->GetIDForIdent("Next"), 3);
+		$this->EnableAction("Next");
 		
 		$this->RegisterVariableInteger("Volume", "Volume");
 		IPS_SetPosition($this->GetIDForIdent("Volume"), 4);
@@ -78,6 +83,8 @@ class IPSMusicCastDevice extends IPSModule
     {
         parent::ApplyChanges();
 		$this->ConnectParent("{82347F20-F541-41E1-AC5B-A636FD3AE2D8}");
+		SetValueInteger($this->GetIDForIdent("Previous"),1);
+		SetValueInteger($this->GetIDForIdent("Next"),1);
     }
 
 public function subscribeDevice()
@@ -253,12 +260,11 @@ public function RequestAction($Ident, $Value) {
 			$InputName = $this->getVariableValueName($this->GetIDForIdent($Ident),$Value);
 			$result = $musicCastController->setInput($InputName);
             break;
-        case "PreviousNext":
-			if($Value == false)
+        case "Previous":
 			{$result = $musicCastController->previous();}
-			else
+            break;
+        case "Next":
 			{$result = $musicCastController->next();}
-			
             break;
         default:
             throw new Exception("Invalid Ident");

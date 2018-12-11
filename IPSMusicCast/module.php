@@ -32,12 +32,17 @@ class IPSMusicCast extends IPSModule
 		//IPS_SetVariableProfileAssociation("MUC_State", 204, "TRANSITIONING", "Speaker", -1);
 		//IPS_SetVariableProfileAssociation("MUC_State", 205, "UNKNOWN", "Speaker", -1);
 		}
-		if (!IPS_VariableProfileExists("MUC_PreviousNext"))
+		if (!IPS_VariableProfileExists("MUC_Previous"))
 		{
-		IPS_CreateVariableProfile("MUC_PreviousNext", 1);
-		IPS_SetVariableProfileValues("MUC_PreviousNext", 0, 1, 1);
-		IPS_SetVariableProfileAssociation("MUC_PreviousNext", 0, "previous", "Speaker", -1);
-		IPS_SetVariableProfileAssociation("MUC_PreviousNext", 1, "next", "Speaker", -1);
+		IPS_CreateVariableProfile("MUC_Previous", 1);
+		IPS_SetVariableProfileValues("MUC_Previous", 0, 1, 0);
+		IPS_SetVariableProfileAssociation("MUC_Previous", 1, "previous", "", -1);
+		}
+		if (!IPS_VariableProfileExists("MUC_Next"))
+		{
+		IPS_CreateVariableProfile("MUC_Next", 1);
+		IPS_SetVariableProfileValues("MUC_Next", 0, 1, 0);
+		IPS_SetVariableProfileAssociation("MUC_Next", 1, "next", "", -1);
 		}
     }
 
@@ -51,8 +56,10 @@ class IPSMusicCast extends IPSModule
 			{IPS_DeleteVariableProfile("MUC_Volume");}
 			if (IPS_VariableProfileExists("MUC_State"))
 			{IPS_DeleteVariableProfile("MUC_State");}
-			if (IPS_VariableProfileExists("MUC_PreviousNext"))
-			{IPS_DeleteVariableProfile("MUC_PreviousNext");}
+			if (IPS_VariableProfileExists("MUC_Previous"))
+			{IPS_DeleteVariableProfile("MUC_Previous");}
+			if (IPS_VariableProfileExists("MUC_Next"))
+			{IPS_DeleteVariableProfile("MUC_Next");}
 
 		}
 //Modul gespeichert
