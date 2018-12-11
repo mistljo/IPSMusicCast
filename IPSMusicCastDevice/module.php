@@ -40,25 +40,35 @@ class IPSMusicCastDevice extends IPSModule
 		IPS_SetVariableCustomProfile($this->GetIDForIdent("Mute"), "MUC_Mute");
 		IPS_SetPosition($this->GetIDForIdent("Mute"), 5);
 		$this->EnableAction("Mute");
+		
+		$this->RegisterVariableBoolean("Shuffle", "Shuffle");
+		IPS_SetVariableCustomProfile($this->GetIDForIdent("Shuffle"), "~Switch");
+		IPS_SetPosition($this->GetIDForIdent("Shuffle"), 6);
+		$this->EnableAction("Shuffle");
+		
+		$this->RegisterVariableBoolean("Repeat", "Repeat");
+		IPS_SetVariableCustomProfile($this->GetIDForIdent("Repeat"), "~Switch");
+		IPS_SetPosition($this->GetIDForIdent("Repeat"), 7);
+		$this->EnableAction("Repeat");
 
 		$this->RegisterVariableInteger("Input", "Input");
-		IPS_SetPosition($this->GetIDForIdent("Input"), 6);
+		IPS_SetPosition($this->GetIDForIdent("Input"), 8);
 		$this->EnableAction("Input");
 		
 		$this->RegisterVariableString("Playtime", "Play Time");
-		IPS_SetPosition($this->GetIDForIdent("Playtime"), 7);
+		IPS_SetPosition($this->GetIDForIdent("Playtime"), 9);
 		
 		$this->RegisterVariableString("Title", "Title");
-		IPS_SetPosition($this->GetIDForIdent("Title"), 8);
+		IPS_SetPosition($this->GetIDForIdent("Title"), 10);
 		
 		$this->RegisterVariableString("Artist", "Artist");
-		IPS_SetPosition($this->GetIDForIdent("Artist"), 9);
+		IPS_SetPosition($this->GetIDForIdent("Artist"), 11);
 		
 		$this->RegisterVariableString("Album", "Album");
-		IPS_SetPosition($this->GetIDForIdent("Album"), 10);
+		IPS_SetPosition($this->GetIDForIdent("Album"), 12);
 		
 		$this->RegisterVariableString("AlbumArt", "Cover");
-		IPS_SetPosition($this->GetIDForIdent("AlbumArt"), 11);
+		IPS_SetPosition($this->GetIDForIdent("AlbumArt"), 13);
 		IPS_SetVariableCustomProfile($this->GetIDForIdent("AlbumArt"), "~HTMLBox");
 
 		// register update timer for Device subscription
@@ -213,6 +223,10 @@ public function updateSpeakerInfos()
 		//Update Input
 		$CurrentInput = $musicCastController->getInput();
 		$this->SetValue("Input", $this->getVariableIntegerbyName($this->GetIDForIdent('Input'),$CurrentInput));
+		//Update Repeat
+		$this->SetValue("Repeat", $musicCastController->getRepeat());
+		//Update Shuffle
+		$this->SetValue("Shuffle", $musicCastController->getShuffle());
 	}
 
 //function extract protected properties
@@ -265,6 +279,12 @@ public function RequestAction($Ident, $Value) {
             break;
         case "Next":
 			{$result = $musicCastController->next();}
+            break;
+        case "Repeat":
+			{$result = $musicCastController->toggleRepeat();}
+            break;
+        case "Shuffle":
+			{$result = $musicCastController->toggleShuffle();}
             break;
         default:
             throw new Exception("Invalid Ident");
