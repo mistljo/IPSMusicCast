@@ -4,9 +4,9 @@ Tested with Speaker: WX-030
 
 Tested on Symcon:
 
-Windows: Symcon 5.1 -> ok
+Windows: Symcon 5.x -> ok
 
-Linux: Symcon 5.1 -> OK
+Linux: Symcon 5.x -> ok
 
 Known Issues:
 
