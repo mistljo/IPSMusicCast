@@ -4,12 +4,14 @@ require_once(__ROOT__ . '/libs/autoload.php');
 
 class IPSMusicCastDevice extends IPSModule
 {
-    public function Create()
-    {
+public function Create()
+{
         parent::Create();
 		$this->RegisterPropertyString('DeviceID', ''); //Device ID
 		$this->RegisterPropertyString('Host', ''); //Device IP
 		$this->RegisterPropertyString('Name', ''); //Device Name
+		$this->RegisterPropertyBoolean('Coordinator', false); //Is Device a Coordinator?
+		
 
 		$this->RegisterVariableBoolean("Power", "Power");
 		IPS_SetVariableCustomProfile($this->GetIDForIdent("Power"), "~Switch");
@@ -78,8 +80,8 @@ class IPSMusicCastDevice extends IPSModule
 		$this->RegisterTimer('setupOneTimeTimer', 2000, 'MUC_DeviceSetup($_IPS[\'TARGET\']);');
     }
 
-    public function Destroy()
-    {
+public function Destroy()
+{
         parent::Destroy();
 		//Funktioniert nicht, warum?
 		
@@ -88,30 +90,86 @@ class IPSMusicCastDevice extends IPSModule
 			IPS_DeleteVariableProfile("MUC_Input_" . $this->ReadPropertyString('DeviceID'));
 		}*/
     }
-//Modul gespeichert
-	    public function ApplyChanges()
-    {
+
+public function ApplyChanges()
+{
         parent::ApplyChanges();
 		$this->ConnectParent("{82347F20-F541-41E1-AC5B-A636FD3AE2D8}");
 		SetValueInteger($this->GetIDForIdent("Previous"),1);
 		SetValueInteger($this->GetIDForIdent("Next"),1);
     }
 
+protected function getMusicCastNetworkObj()
+{
+		return new MusicCast\Network;
+}
+
+protected function getMusicCastClientObj()
+{
+	try {
+		$DeviceIP = $this->ReadPropertyString('Host');
+		return new MusicCast\Client(['host' => $DeviceIP,'port' => 80,]);
+	}
+	catch (Exception $e) {
+		echo 'Error: ',  $e->getMessage(), "\n";
+		$this->SetStatus(104);
+		exit(1);
+	}
+}
+
+protected function getMusicCastDeviceObj()
+{
+	try {
+		$DeviceIP = $this->ReadPropertyString('Host');
+		return new MusicCast\Device($DeviceIP);
+	}
+	catch (Exception $e) {
+		echo 'Error: ',  $e->getMessage(), "\n";
+		$this->SetStatus(104);
+		exit(1);
+	}
+}
+
+protected function getMusicCastSpeakerObj($MUCDeviceObj)
+{
+	try {
+		return new MusicCast\Speaker($MUCDeviceObj);
+	}
+	catch (Exception $e) {
+		echo 'Error: ',  $e->getMessage(), "\n";
+		$this->SetStatus(104);
+		exit(1);
+	}
+}
+
+protected function getMusicCastControllerObj($MUCControllerObj,$MUCNetworkObj)
+{
+	try {
+		return new MusicCast\Controller($MUCControllerObj,$MUCNetworkObj,1);
+	}
+	catch (Exception $e) {
+		echo 'Error: ',  $e->getMessage(), "\n";
+		$this->SetStatus(104);
+		exit(1);
+	}
+}
+
+
 public function subscribeDevice()
 	{
 		IPS_LogMessage("MUC ". $this->ReadPropertyString('Name'), "Subscribe Device: " . $this->ReadPropertyString('Host'));
-		$DeviceHost = $this->ReadPropertyString('Host');
-		$musicCastClient = new MusicCast\Client(['host' => $DeviceHost,'port' => 80,]);
-		$result = $musicCastClient->api('events')->subscribe();
+		$musicCastClientObj = $this->getMusicCastClientObj();
+		$result = $musicCastClientObj->api('events')->subscribe();
 		$timer = 540000; //9 Minuten
 		$this->SetTimerInterval('subscribeDevicesTimer', $timer);
 	}
 
 public function updateSpeakerIP()
 {
-		//Update device IP
+		//Clear cache
 		$tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "musiccast";
 		@$this->delete_files($tempPath);
+		//Compare IPs
 		$CurrentIP = $this->getSpeakerIPbyName($this->ReadPropertyString('Name'));
 		if($CurrentIP != $this->ReadPropertyString('Host'))
 			{
@@ -122,9 +180,9 @@ public function updateSpeakerIP()
 			}
 		$this->SetStatus(102);
 }
-	//Get Data from UDP Socket
-		public function ReceiveData($JSONString)
-		{
+//Get Data from UDP Socket
+public function ReceiveData($JSONString)
+{
 			$data = json_decode($JSONString);
 			//Parse and write values to our buffer
 			$this->SetBuffer("MusicCastDeviceBuffer", utf8_decode($data->Buffer));
@@ -184,13 +242,12 @@ public function updateSpeakerIP()
 
 public function updateSpeakerInfos()
 	{
-		$musicCastNetwork = new MusicCast\Network;
-		$DeviceHost = $this->ReadPropertyString('Host');
-		$musicCastDevice = new MusicCast\Device($DeviceHost);
-		$musicCastSpeaker = new MusicCast\Speaker($musicCastDevice);
-		$musicCastController = new MusicCast\Controller($musicCastSpeaker,$musicCastNetwork,1);
+		$MUCNetworkObj = $this->getMusicCastNetworkObj();
+		$MUCDeviceObj = $this->getMusicCastDeviceObj();
+		$MUCSpeakerObj = $this->getMusicCastSpeakerObj($MUCDeviceObj);
+		$MUCControllerObj = $this->getMusicCastControllerObj($MUCSpeakerObj,$MUCNetworkObj,1);
 		//Update Album Details
-		$StateDetails = $musicCastController->getStateDetails();
+		$StateDetails = $MUCControllerObj->getStateDetails();
 		$this->SetValue("Title", $this->getObjProp($StateDetails->track,"title"));
 		$this->SetValue("Artist", $this->getObjProp($StateDetails->track,"artist"));
 		$this->SetValue("Album", $this->getObjProp($StateDetails->track,"album"));
@@ -203,9 +260,9 @@ public function updateSpeakerInfos()
 			IPS_SetHidden($this->GetIDForIdent('AlbumArt'),false);
 		}
 		//Update State (play,stop,pause)
-		$this->SetValue("State", $musicCastController->getState());
+		$this->SetValue("State", $MUCControllerObj->getState());
 		//Update Power 
-		$powerstate = $musicCastController->isPowerOn();
+		$powerstate = $MUCControllerObj->isPowerOn();
 			if($powerstate == false)
 			{
 				$this->SetValue("Power", $powerstate);
@@ -217,16 +274,16 @@ public function updateSpeakerInfos()
 			}
 		
 		//Update Volume 
-		$this->SetValue("Volume", $musicCastController->getVolume());
+		$this->SetValue("Volume", $MUCControllerObj->getVolume());
 		//Update Mute 
-		$this->SetValue("Mute", $musicCastController->isMuted());
+		$this->SetValue("Mute", $MUCControllerObj->isMuted());
 		//Update Input
-		$CurrentInput = $musicCastController->getInput();
+		$CurrentInput = $MUCControllerObj->getInput();
 		$this->SetValue("Input", $this->getVariableIntegerbyName($this->GetIDForIdent('Input'),$CurrentInput));
 		//Update Repeat
-		$this->SetValue("Repeat", $musicCastController->getRepeat());
+		$this->SetValue("Repeat", $MUCControllerObj->getRepeat());
 		//Update Shuffle
-		$this->SetValue("Shuffle", $musicCastController->getShuffle());
+		$this->SetValue("Shuffle", $MUCControllerObj->getShuffle());
 	}
 
 //function extract protected properties
@@ -236,55 +293,53 @@ protected function getObjProp($obj, $val){
 }
 
 public function RequestAction($Ident, $Value) {
- 		$musicCastNetwork = new MusicCast\Network;
-		$DeviceHost = $this->ReadPropertyString('Host');
-		$musicCastDevice = new MusicCast\Device($DeviceHost);
-		$musicCastSpeaker = new MusicCast\Speaker($musicCastDevice);
-		$musicCastController = new MusicCast\Controller($musicCastSpeaker,$musicCastNetwork,1);
-
+		$MUCNetworkObj = $this->getMusicCastNetworkObj();
+		$MUCDeviceObj = $this->getMusicCastDeviceObj();
+		$MUCSpeakerObj = $this->getMusicCastSpeakerObj($MUCDeviceObj);
+		$MUCControllerObj = $this->getMusicCastControllerObj($MUCSpeakerObj,$MUCNetworkObj,1);
 
     switch($Ident) {
         case "Mute":
 			if($Value == true)
 			{
-				$result = $musicCastController->mute();
+				$result = $MUCControllerObj->mute();
 			}else{
-				$result = $musicCastController->unmute();
+				$result = $MUCControllerObj->unmute();
 			}
             break;
         case "Power":
 			if($Value == false)
 			{
-				$result = $musicCastController->standBy();
+				$result = $MUCControllerObj->standBy();
 				$this->setHiddenDeviceVariable($this->GetIDForIdent($Ident),true);
 			}else{
-				$result = $musicCastController->powerOn();
+				$result = $MUCControllerObj->powerOn();
 				$this->setHiddenDeviceVariable($this->GetIDForIdent($Ident),false);
 				$this->subscribeDevice();
 				$this->updateSpeakerInfos();
 			}
             break;
         case "Volume":
-			$result = $musicCastController->setVolume($Value);
+			$result = $MUCControllerObj->setVolume($Value);
             break;
         case "State":
-			$result = $musicCastController->setState($Value);
+			$result = $MUCControllerObj->setState($Value);
             break;
         case "Input":
 			$InputName = $this->getVariableValueName($this->GetIDForIdent($Ident),$Value);
-			$result = $musicCastController->setInput($InputName);
+			$result = $MUCControllerObj->setInput($InputName);
             break;
         case "Previous":
-			{$result = $musicCastController->previous();}
+			{$result = $MUCControllerObj->previous();}
             break;
         case "Next":
-			{$result = $musicCastController->next();}
+			{$result = $MUCControllerObj->next();}
             break;
         case "Repeat":
-			{$result = $musicCastController->toggleRepeat();}
+			{$result = $MUCControllerObj->toggleRepeat();}
             break;
         case "Shuffle":
-			{$result = $musicCastController->toggleShuffle();}
+			{$result = $MUCControllerObj->toggleShuffle();}
             break;
         default:
             throw new Exception("Invalid Ident");
@@ -342,9 +397,9 @@ protected function getVariableIntegerbyName($VariableID,$VariableValueName)
 
 protected function getSpeakerIPbyName($SpeakerName)
 {
-		$musicCastNetwork = new MusicCast\Network;
+		$MUCNetworkObj = $this->getMusicCastNetworkObj();
 		try {
-				$speaker = $musicCastNetwork->getSpeakerByName($SpeakerName);
+				$speaker = $MUCNetworkObj->getSpeakerByName($SpeakerName);
 				$DeviceObj = $this->getObjProp($speaker,"device");
 				$DeviceIP = $this->getObjProp($DeviceObj,"ip");
 				return $DeviceIP;
@@ -356,27 +411,16 @@ protected function getSpeakerIPbyName($SpeakerName)
 		}
 }
 
-
-/*
-public function getNetPreset(){
-			$Data = "netusb/getPresetInfo"; 
-			$Answer = $this->SendCommand($Data);
-			$NetPresets = json_decode($Answer,false);
-			return ($NetPresets); 
-			}
-			*/
-			
-			
 //Input Variable Profile create
 protected function createInputVariablenprofile()
 	{
+		$MUCNetworkObj = $this->getMusicCastNetworkObj();
+		$MUCDeviceObj = $this->getMusicCastDeviceObj();
+		$MUCSpeakerObj = $this->getMusicCastSpeakerObj($MUCDeviceObj);
+		$MUCControllerObj = $this->getMusicCastControllerObj($MUCSpeakerObj,$MUCNetworkObj,1);
+
 		$DeviceID = $this->ReadPropertyString('DeviceID');
-		$musicCastNetwork = new MusicCast\Network;
-		$DeviceHost = $this->ReadPropertyString('Host');
-		$musicCastDevice = new MusicCast\Device($DeviceHost);
-		$musicCastSpeaker = new MusicCast\Speaker($musicCastDevice);
-		$musicCastController = new MusicCast\Controller($musicCastSpeaker,$musicCastNetwork,1);
-		$Inputs = $musicCastController->getInputList();
+		$Inputs = $MUCControllerObj->getInputList();
 		
 		$VariablenProfileName = "MUC_Input_" . $DeviceID;
 		if (!IPS_VariableProfileExists($VariablenProfileName)) 
@@ -390,7 +434,7 @@ protected function createInputVariablenprofile()
 		}
 	}
 	
-	protected function getInstanceNameExist($InstanceName)
+protected function getInstanceNameExist($InstanceName)
 		{
 			$Instanceexist = false;
 			$Instances = IPS_GetInstanceList();
@@ -403,18 +447,6 @@ protected function createInputVariablenprofile()
 			}
 			return $Instanceexist;
 		}
-    /**
-     * reconnect parent socket
-     * @param bool $force
-     */
-    public function ReconnectParentSocket($force = false)
-    {
-        $ParentID = $this->GetParentId();
-        if (($this->HasActiveParent() || $force) && $ParentID > 0) {
-            IPS_SetProperty($ParentID, 'Open', true);
-            @IPS_ApplyChanges($ParentID);
-        }
-    }
 
 protected function delete_files($target) {
     if(is_dir($target)){

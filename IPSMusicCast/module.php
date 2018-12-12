@@ -4,7 +4,7 @@ require_once(__ROOT__ . '/libs/autoload.php');
 
 class IPSMusicCast extends IPSModule
 {
-    public function Create()
+	public function Create()
     {
         parent::Create();
 		
@@ -78,26 +78,29 @@ class IPSMusicCast extends IPSModule
 			IPS_ApplyChanges($UDPSocket);
 			//$this->SetStatus(104);
 		}
+    protected function getMusicCastNetworkObj()
+    {
+			return new MusicCast\Network;
+	}
 
 	public function GetMCDevices()
 		{
 			//Delete Cache Folder
 			$tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "musiccast";
 			@$this->delete_files($tempPath);
-			
 			//Get all Speakers in current Network
-			$musicCastNetwork = new MusicCast\Network;
+			$MUCNetworkObj = $this->getMusicCastNetworkObj();
 			try {
-				$MUCspeakers = $musicCastNetwork->getSpeakers();
-				}
+				$MUCNetworkObj->getSpeakers();
+			}
 			catch (Exception $e) {
-
 				echo 'Error: ',  $e->getMessage(), "\n";
 				$this->SetStatus(104);
 				exit(1);
-			}		
+			}
 			$this->SetStatus(102);
-			$SpeakerIPs = array_keys($MUCspeakers);
+			$MUCNetworkArray = $this->getObjProp($MUCNetworkObj,"speakers");
+			$SpeakerIPs = array_keys($MUCNetworkArray);
 			
 			//Liest bestehende MusicCast Geräte aus ips aus
 			$MusicCastInstances = (IPS_GetInstanceListByModuleID('{332C2875-7503-4054-95BE-250081AF03DF}'));
@@ -107,7 +110,6 @@ class IPSMusicCast extends IPSModule
 				array_push($ExistingDevicesIDs, IPS_GetProperty($MusicCastInstance, "DeviceID"));
 			}
 			//Speaker Instancen erstellen
-			if (isset($MUCspeakers) && is_array($MUCspeakers)) {
 				foreach ($SpeakerIPs as $SpeakerIP)
 				{
 					$musicCastDevice = new MusicCast\Device($SpeakerIP);
@@ -132,7 +134,6 @@ class IPSMusicCast extends IPSModule
 						}
 					}
 				echo "Done, see Message Log for more Infos";
-			}
 		}
 	
     /**
@@ -158,5 +159,10 @@ class IPSMusicCast extends IPSModule
 			unlink( $target );  
 		}
 	}
+//function extract protected properties
+protected function getObjProp($obj, $val){
+	$propGetter = Closure::bind( function($prop){return $this->$prop;}, $obj, $obj );
+	return $propGetter($val);
+}
 }
 ?>
