@@ -5,7 +5,7 @@
     ],
 	"actions":
 	[
-		{ "type": "Button", "label": "Get Devices", "onClick": "MUC_GetMCDevices($id);" },
+		{ "type": "Button", "label": "Get Devices", "onClick": "MUC_GetMCSpeakers($id);" },
 	],
 		"status":
     [

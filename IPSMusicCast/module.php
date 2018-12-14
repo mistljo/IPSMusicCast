@@ -29,8 +29,6 @@ class IPSMusicCast extends IPSModule
 		IPS_SetVariableProfileAssociation("MUC_State", 201, "stop", "Speaker", -1);
 		IPS_SetVariableProfileAssociation("MUC_State", 202, "play", "Speaker", -1);
 		IPS_SetVariableProfileAssociation("MUC_State", 203, "pause", "Speaker", -1);
-		//IPS_SetVariableProfileAssociation("MUC_State", 204, "TRANSITIONING", "Speaker", -1);
-		//IPS_SetVariableProfileAssociation("MUC_State", 205, "UNKNOWN", "Speaker", -1);
 		}
 		if (!IPS_VariableProfileExists("MUC_Previous"))
 		{
@@ -83,7 +81,7 @@ class IPSMusicCast extends IPSModule
 			return new MusicCast\Network;
 	}
 
-	public function GetMCDevices()
+	public function GetMCSpeakers()
 		{
 			//Delete Cache Folder
 			$tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "musiccast";
@@ -116,6 +114,7 @@ class IPSMusicCast extends IPSModule
 					$musicCastSpeaker = new MusicCast\Speaker($musicCastDevice);
 					$SpeakerName = $musicCastSpeaker->getName();
 					$SpeakerID = $musicCastSpeaker->getUuid();
+					$SpeakerIsCoordinator = $musicCastSpeaker->isCoordinator();
 					//Prüfe ob Instance schon vorhanden
 						if (!in_array($SpeakerID, $ExistingDevicesIDs))
 						{
@@ -126,6 +125,7 @@ class IPSMusicCast extends IPSModule
 							IPS_SetProperty($NewMUCDevice, "DeviceID", $SpeakerID);
 							IPS_SetProperty($NewMUCDevice, "Host", $SpeakerIP);
 							IPS_SetProperty($NewMUCDevice, "Name", $SpeakerName);
+							IPS_SetProperty($NewMUCDevice, "Coordinator", $SpeakerIsCoordinator);
 							IPS_ApplyChanges($NewMUCDevice);
 
 							
