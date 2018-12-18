@@ -1,7 +1,8 @@
 {
     "elements":
     [
-		{ "type": "Label", "caption": "Press (Get Devices) to scan for Speakers in current network" }
+		{ "type": "Label", "caption": "Press (Get Devices) to scan for Speakers in current network" },
+		{ "type": "ValidationTextBox", "name": "NetworkInterface", "caption": "Network Interface" }
     ],
 	"actions":
 	[

@@ -7,7 +7,7 @@ class IPSMusicCast extends IPSModule
 	public function Create()
     {
         parent::Create();
-		
+		$this->RegisterPropertyInteger('NetworkInterface', 0); //Interface ID for Multicast
 		//Globale Variablen Profile erstellen
 		if (!IPS_VariableProfileExists("MUC_Mute"))
 		{
@@ -88,6 +88,7 @@ class IPSMusicCast extends IPSModule
 			@$this->delete_files($tempPath);
 			//Get all Speakers in current Network
 			$MUCNetworkObj = $this->getMusicCastNetworkObj();
+			$MUCNetworkObj->setNetworkInterface($this->ReadPropertyInteger('NetworkInterface'));
 			try {
 				$MUCNetworkObj->getSpeakers();
 			}

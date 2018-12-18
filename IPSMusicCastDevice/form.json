@@ -3,6 +3,7 @@
     [
         { "type": "ValidationTextBox", "name": "DeviceID", "caption": "DeviceID" },
         { "type": "ValidationTextBox", "name": "Host", "caption": "IP" },
+		{ "type": "ValidationTextBox", "name": "NetworkInterface", "caption": "Network Interface" },
         { "type": "ValidationTextBox", "name": "Name", "caption": "Name" },
 		{ "type": "ValidationTextBox", "name": "GroupID", "caption": "Group ID" },
 		{ "type": "ValidationTextBox", "name": "Coordinator", "caption": "Coordinator" }

@@ -12,7 +12,7 @@ public function Create()
 		$this->RegisterPropertyString('Name', ''); //Device Name
 		$this->RegisterPropertyString('GroupID', ''); //Group ID
 		$this->RegisterPropertyBoolean('Coordinator', false); //Is Device a Coordinator?
-		
+		$this->RegisterPropertyInteger('NetworkInterface', 0); //Interface ID for Multicast
 
 		$this->RegisterVariableBoolean("Power", "Power");
 		IPS_SetVariableCustomProfile($this->GetIDForIdent("Power"), "~Switch");
@@ -109,7 +109,9 @@ public function ApplyChanges()
 
 protected function getMusicCastNetworkObj()
 {
-		return new MusicCast\Network;
+		$MUCNetworkObj = new MusicCast\Network;
+		$MUCNetworkObj->setNetworkInterface($this->ReadPropertyInteger('NetworkInterface'));
+		return $MUCNetworkObj;
 }
 
 protected function getMusicCastClientObj()
@@ -550,9 +552,14 @@ protected function getSpeakerIPbyName($SpeakerName)
 		$MUCNetworkObj = $this->getMusicCastNetworkObj();
 		try {
 				$speaker = $MUCNetworkObj->getSpeakerByName($SpeakerName);
-				$DeviceObj = $this->getObjProp($speaker,"device");
-				$DeviceIP = $this->getObjProp($DeviceObj,"ip");
-				return $DeviceIP;
+				if (isset($speaker)) {
+					$DeviceObj = $this->getObjProp($speaker,"device");
+					$DeviceIP = $this->getObjProp($DeviceObj,"ip");
+					return $DeviceIP;
+					}
+				else {
+					throw new Exception('No Device found.');
+					}
 			}
 		catch (Exception $e) {
 				$this->SetStatus(104);
